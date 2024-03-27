@@ -1,0 +1,77 @@
+-viewing data -
+SELECT * FROM spotify2023
+
+-quick cleaning column names -
+ALTER TABLE spotify2023 RENAME COLUMN artist(s)_name TO artists_name;
+
+-identified interest points in table, looking to find top streamed songs -
+SELECT track_name, artist_count, released_year, streams, danceability_, bpm, key  FROM spotify2023
+ORDER BY streams DESC;
+
+-creating a new column to categorize 'danceability' data-
+ALTER TABLE spotify2023
+ADD COLUMN dance_level VARCHAR(20);
+
+-updating new column with ranking of dance level-
+UPDATE spotify2023
+SET dance_level =
+    CASE
+        WHEN danceability_ < 25 THEN 'Low'
+        WHEN danceability_ < 50 THEN 'Medium'
+        WHEN danceability_ < 75 THEN 'High'
+        ELSE 'Extra High'
+    END;
+
+-double checking of course!-
+
+select track_name, danceability_, dance_level from spotify2023
+ORDER BY danceability_ DESC;
+
+-lets make another column to categorize music speed based on bpm-
+ALTER TABLE spotify2023
+ADD COLUMN music_speed VARCHAR(20);
+
+-updating new column with ranking of dance level speed-
+UPDATE spotify2023
+SET music_speed =
+    CASE
+        WHEN bpm < 70 THEN 'Slow'
+        WHEN bpm < 90 THEN 'Medium Slow'
+        WHEN bpm < 110 THEN 'Medium'
+        WHEN bpm < 130 THEN 'Medium Fast'
+        ELSE 'Fast'
+    END;
+
+-lets double check again-
+SELECT track_name, bpm, music_speed FROM spotify2023
+ORDER BY bpm DESC;
+
+-next lets create a field to simplify current releases and past releases-
+
+-final edit! making a column to categorize collaborative songs-
+ALTER TABLE spotify2023
+ADD COLUMN collab VARCHAR;
+
+-lets set some conditions for this new column-
+UPDATE spotify2023
+SET collab =
+    CASE
+        WHEN artist_count > 1 THEN 'Collab'
+        ELSE 'Solo'
+    END;
+
+-final check-
+SELECT track_name, artist_count, collab FROM spotify2023;
+
+-now lets do some analysis! finding general info on the top 20 most streamed songs-
+SELECT track_name, artists_name, artist_count, music_speed, dance_level, streams, collab FROm spotify2023
+ORDER BY streams DESC
+LIMit 20;
+
+-i'd like to better understand the top 20 performing solo artists by total # of streams of 2023-
+SELECT artist_name, SUM(streams) AS total_streams
+FROM your_table_name
+GROUP BY artist_name
+ORDER BY total_streams DESC, artist_name
+LIMIT 20;
+
